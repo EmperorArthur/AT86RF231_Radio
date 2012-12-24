@@ -25,7 +25,7 @@ AVRDUDE = avrdude
 # Application configuration
 
 APP = Debugger
-APP_OBJECTS = Debugger.o uart.o communication.o LED.o
+APP_OBJECTS = Debugger.o uart.o communication.o LED.o radio.o spi.o
 
 # Build tool configuration
 
