@@ -72,14 +72,15 @@ struct radioFrame {
 	public:
 		radioFrame();
 		radioFrame(uint8_t newSize);
+		~radioFrame();
 		void setSize(uint8_t newSize);
 		uint8_t getSize();
 		uint8_t size();
 		void setDataPoint(uint8_t location,uint8_t newDataPoint);
 		uint8_t getDataPoint(uint8_t location);
-		uint8_t * data;
 	private:
 		uint8_t mySize; //Max size is 127 bytes
+		uint8_t * data;
 };
 
 #endif
@@ -90,6 +91,11 @@ radioFrame::radioFrame(){
 radioFrame::radioFrame(uint8_t newSize){
 	mySize = newSize;
 	data = (uint8_t *) malloc(mySize);
+}
+radioFrame::~radioFrame(){
+	if (NULL != data){
+		free(data);
+	}
 }
 void radioFrame::setSize(uint8_t newSize){
 	mySize = newSize;
@@ -193,14 +199,21 @@ void radio_set_pan_id(uint16_t pan_id){
 	radio_reg_write(RG_PAN_ID_0,pan_id & 0x00FF);
 	radio_reg_write(RG_PAN_ID_1,pan_id & 0xFF00);
 }
+//Set the radio mode
+//Not all modes work with this function
+//If something breaks, this function will HANG.
+//No errors are currently returned
+void radio_set_mode(uint8_t newMode){
+	radio_reg_write(RG_TRX_STATE,newMode);
+	//Wait until the state is set
+	while( !(radio_reg_read(RG_TRX_STATUS) & newMode));
+}
 void radio_setup(){
 	spi_setup();
 	radio_enable_LED();
 	
 	//Set radio state to trx_off
-	//radio_reg_write(RG_TRX_STATE,_BV(CMD_FORCE_TRX_OFF));
-	//Wait until the state is trx_off
-	//while( !(radio_reg_read(RG_TRX_STATUS) & TRX_OFF));
+	//radio_set_mode(TRX_OFF);
 	
 	//Use max power (default)
 	//uint8_t power = 0x00;
@@ -209,9 +222,8 @@ void radio_setup(){
 	// Use automatic CRC on transmit
 	//radio_reg_write(TRX_CTRL_1,_BV(TX_AUTO_CRC_ON));
 	
-	radio_set_channel(0x15); //(got this from defconfig.mk)
-	
-	// Set addresses & pan_id (got these from defconfig.mk)
+	//got these from defconfig.mk for my transmitter
+	radio_set_channel(0x15);
 	radio_set_address(0x0001);
 	radio_set_pan_id(0x8842);
 	
@@ -221,10 +233,8 @@ void radio_setup(){
     // Set up CCA (?What is this?)
     //tat_configure_csma(234, 0xE2);
 	
-	//Set state to RX_AACK_ON
-	radio_reg_write(RG_TRX_STATE,RX_ON);
-	//Wait until the state is RX_AACK_ON
-	while( !(radio_reg_read(RG_TRX_STATUS) & RX_ON));
+	//Set state to RX_ON
+	radio_set_mode(RX_ON);
 }
 
 //END radio.h/c
