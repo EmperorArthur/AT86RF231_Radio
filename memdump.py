@@ -1,3 +1,5 @@
+import shlex
+import binascii
 import serial
 ser = serial.Serial(7)	#COM 8
 ser.setTimeout(1)		#1 second timeout
@@ -131,7 +133,7 @@ def spi_read_frame():
 	print("Frame size is:  "+str(size))
 	for i in range(size):
 		frame.append(spi(0))
-		print(str(i) + "," + str(frame[i]))
+		#print(str(i) + "," + str(frame[i]))
 	ser.write(bytes(b"s"))
 	ser.write(bytes(b"h"))
 	return (size,frame)
@@ -149,9 +151,14 @@ def spi_write_frame(size):
 	ser.write(bytes(b"s"))
 	ser.write(bytes(b"h"))
 
-#LED_off()
-#spi_write_frame(30)
-#(inSize,inFrame) = spi_read_frame()
+#Change the radio's channel
+def radio_change_channel(newChannel):
+	ser.write(bytes(b"r"))
+	ser.write(bytes(b"c"))
+	ser.write(bytes(str(newChannel),"ascii"))
+	ser.write(bytes(b"\n"))
+	#This just reads junk data
+	ser.readline()
 
 list1 = []
 list2 = []
@@ -159,21 +166,25 @@ currentList = []
 currentList = list1
 while True:
 	cmdIn = input("What would you like to do?  ")
-	cmdIn = cmdIn[0:len(cmdIn)-1]
-	if "srf" == cmdIn:
+	cmdIn = shlex.split(cmdIn[0:len(cmdIn)-1])
+	print(cmdIn[0])
+	if "LED_off" == cmdIn[0]:
+		print("Turning LED off")
+		LED_off()
+	if "srf" == cmdIn[0]:
 		print("Using the spi debug function to read the radio's frame buffer")
 		(inSize,currentList) = spi_read_frame()
-	if "rrr" == cmdIn:
+	if "rrr" == cmdIn[0]:
 		print("Reading radio memory, using builtin function")
 		del currentList[0:len(currentList)]
 		for addr in range(0x2F):
 			currentList.append(radio_reg_read(addr))
-	if "srr" == cmdIn:
+	if "srr" == cmdIn[0]:
 		print("Reading radio memory, using spi function")
 		del currentList[0:len(currentList)]
 		for addr in range(0x2F):
 			currentList.append(radio_reg_read(addr))
-	if "compare" == cmdIn:
+	if "compare" == cmdIn[0]:
 		print("Comparing the two lists for differences")
 		difference = False
 		if len(list1) != len(list2):
@@ -181,23 +192,32 @@ while True:
 		else:
 			for addr in range(len(list1)):
 				if list1[addr] != list2[addr]:
-					print(str(addr) + "," + str(list2[addr]) + "," + str(list1[addr]))
+					print(str(addr) + "," + str(list1[addr]) + "," + str(list2[addr]))
 					difference = True
 			if False == difference:
 				print("No differences detected")
-	if "setlist1" == cmdIn:
+	if "setlist1" == cmdIn[0]:
 		currentList = list1
 		if currentList is list1:
 			print("currentList is now list1")
-	if "setlist2" == cmdIn:
+	if "setlist2" == cmdIn[0]:
 		currentList = list2
 		if currentList is list2:
 			print("currentList is now list2")
-	if "print" == cmdIn:
+	if "print" == cmdIn[0]:
 		print("Outputting currentList")
 		for addr in range(len(currentList)):
 			print(str(addr) + "," + str(currentList[addr]))
-	if "help" == cmdIn:
+	if "printascii" == cmdIn[0]:
+		print("Outputting currentList in ascii")
+		print(str(bytes(currentList)))
+	if "radio_write" == cmdIn[0]:
+		print("Writing " + str(cmdIn[2]) + " to radio register " + int(str(cmdIn[1]),16))
+		spi_reg_write(int(cmdIn[1]),int(cmdIn[2]))
+	if "rcc" == cmdIn[0]:
+		print("Changing radio channel to " + str(cmdIn[1]))
+		radio_change_channel(cmdIn[1])
+	if "help" == cmdIn[0]:
 		print("This is a command interpreter to interface with the microcontroller.")
 		print("There are two lists, which hold the incoming data.")
 		print("Command list:")
