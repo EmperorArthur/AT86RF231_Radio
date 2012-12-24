@@ -333,26 +333,6 @@ void loop(){
 					scanf("%i",&temp);
 					radio_set_channel((uint8_t) temp);
 					break;
-				//Test writing and reading a radio frame
-				case 't':
-					printf("Initiating radio frame test\n");
-					radioFrame testFrame1(30);
-					for (int i=0;i<testFrame1.size();i++){
-						testFrame1.data[i] = testFrame1.size() - i;
-					}
-					radioFrame testFrame2;
-					radio_Frame_write(testFrame1);
-					radio_Frame_read(testFrame2);
-					if(testFrame1.size() != testFrame2.size()){
-						printf("Warning:  Size Mismatch %i, %i\n",testFrame1.size(),testFrame2.size());
-					}
-					for (int i=0;i<testFrame1.size();i++){
-						if(testFrame1.data[i] != testFrame2.data[i]){
-							printf("Warning:  Data Mismatch %i, %i\n",testFrame1.data[i],testFrame2.data[i]);
-						}
-					}
-					printf("Radio frame test completed.\n");
-					break;
 			}
 			break;
 	}
