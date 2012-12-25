@@ -1,10 +1,6 @@
 //Wireless In home Power mOnitoring Datalogger
 //Copyright Arthur Moore 2012
 
-//macros to turn these #defines into strings when needed (the precompiler is weird)
-#define STRINGIFY(str) TOSTR(str)
-#define TOSTR(str) #str
-
 //Human readable output, or stuff used with my python scripts
 //#define HUMAN
 
@@ -17,40 +13,6 @@
 #include "LED.h"
 #include "radio.h"
 #include "spi.h"
-
-//BEGIN Nesicary C++ crap (avr-g++ needs these)
-//I did not write these
-#include <stdlib.h> 
-
-void * operator new(size_t size); 
-void operator delete(void * ptr);
-
-void * operator new(size_t size) 
-{ 
-  return malloc(size); 
-} 
-
-void operator delete(void * ptr) 
-{ 
-  free(ptr); 
-}
-
-__extension__ typedef int __guard __attribute__((mode (__DI__))); 
-
-extern "C" int __cxa_guard_acquire(__guard *); 
-extern "C" void __cxa_guard_release (__guard *); 
-extern "C" void __cxa_guard_abort (__guard *); 
-
-int __cxa_guard_acquire(__guard *g) {return !*(char *)(g);}; 
-void __cxa_guard_release (__guard *g) {*(char *)g = 1;}; 
-void __cxa_guard_abort (__guard *) {}; 
-
-extern "C" void __cxa_pure_virtual(void); 
-void __cxa_pure_virtual(void) {}; 
-
-
-using namespace std;
-//END Nesicary C++ crap
 
 void setup()
 {
@@ -82,12 +44,7 @@ void loop(){
 				case 'r':
 					scanf("%i",&temp);
 					address = (unsigned char *) temp;
-					#ifdef HUMAN
-						printf("\n\r");
-						printf("Memory in \"0x%.2x\" is:  0x%.2x\n\r",address,*address);
-					#else
-						printf("%.2x\n",*address);
-					#endif
+					printf("%.2x\n",*address);
 					break;
 				//Write to memory
 				case 'w':
@@ -98,12 +55,7 @@ void loop(){
 					//address = (unsigned char *) 43;
 					*address = value;
 					//Verify write successful
-					#ifdef HUMAN
-						printf("\n\r");
-						printf("Memory in \"0x%.2x\" after write is:   0x%.2x\n\r",address,*address);
-					#else
-						printf("%.2x\n",*address);
-					#endif
+					printf("%.2x\n",*address);
 					break;
 			}
 			break;
@@ -156,9 +108,9 @@ void loop(){
 
 //This is in case something went wrong
 ISR(BADISR_vect){
-	//cli();
+	cli();
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-		sprint("Warning:  Uncaught Interupt Detected!!!\n\r");
+		printf("Warning:  Uncaught Interupt Detected!!!\n\r");
 		BlinkLED(100,20);
 	}
 }
@@ -167,10 +119,7 @@ int main(){
 	setup();
 	for(;;){
 		loop();
-		#ifdef HUMAN
-			sprint("It works\n\r");
-			//BlinkLED(500,3);
-		#endif
+		//BlinkLED(500,3);
 	}
 	return 0;
 }
