@@ -9,6 +9,9 @@
 
 //This lets me set individual bits in a register high
 #define REG_OR_ENABLE(address,data) uint8_t temp = radio_reg_read(address); temp |= data; radio_reg_write(address,temp);
+//Easily defined stuff not in the registermap
+#define IRQ_RX_START 2
+#define IRQ_TRX_END 3
 //I'm using an AT86RF231, so I have some extra features (like some LED Outs, and auto CRC)
 #define PA_EXT_EN		7
 #define TX_AUTO_CRC_ON	5
@@ -140,6 +143,9 @@ void radio_set_mode(uint8_t newMode){
 void radio_setup(){
 	spi_setup();
 	
+	SET_SLP_TR_LOW();
+	RADIO_RST();
+	
 	//Set radio state to trx_off
 	radio_set_mode(CMD_FORCE_TRX_OFF);
 	
@@ -148,9 +154,9 @@ void radio_setup(){
 	//radio_reg_write(RG_PHY_TX_PWR,0b11000000 | (power & 0x0F));
 	
 	// Use automatic CRC on transmit
-	//radio_enable_CRC();
+	radio_enable_CRC();
 	//Enable radio LED on transmit
-	//radio_enable_LED();
+	radio_enable_LED();
 	
 	//got these from defconfig.mk for my transmitter
 	radio_set_channel(0x15);
@@ -162,6 +168,10 @@ void radio_setup(){
     //tat_set_device_role(false);
     // Set up CCA (?What is this?)
     //tat_configure_csma(234, 0xE2);
+	
+	//Enable the recieving data interupt
+	//I'm ignoring proper fram protocol, so recieve done doesn't work
+	radio_reg_write(RG_IRQ_MASK,_BV(IRQ_RX_START));
 	
 	//Set state to RX_ON
 	radio_set_mode(RX_ON);
