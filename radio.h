@@ -4,8 +4,10 @@
 #ifndef RADIO_H
 #define RADIO_H
 
-//This is purely to define uint8_t
+//Needed for uint8_t
 #include <avr/io.h>
+//This contains all the AVR specific code
+#include "radio-avr.h"
 
 //This is the frame to send to the radio
 //Warning, changing the frame size deletes everything in data
