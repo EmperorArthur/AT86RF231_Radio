@@ -19,6 +19,8 @@ struct radioFrame {
 		void setSize(uint8_t newSize);
 		uint8_t getSize();
 		uint8_t size();
+		uint8_t & operator[] (uint8_t location);
+		//Consider removing these now that I've implemented operator overloading
 		void setDataPoint(uint8_t location,uint8_t newDataPoint);
 		uint8_t getDataPoint(uint8_t location);
 	private:

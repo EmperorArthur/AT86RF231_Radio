@@ -52,6 +52,11 @@ uint8_t radioFrame::getDataPoint(uint8_t location){
 	assert( (0 < location) && (location < mySize));
 	return data[location];
 }
+uint8_t & radioFrame::operator[] (uint8_t location){
+	assert(NULL != data);
+	assert( (0 < location) && (location < mySize));
+	return data[location];
+}
 
 uint8_t radio_reg_read(uint8_t address){
 	address = (address & 0x3F) | 0b10000000;
@@ -97,7 +102,7 @@ uint8_t radio_Frame_read(radioFrame inFrame){
 	//Data is initalized by setSize(...)
 	//Read the data
 	for (int i = 0; i < inFrame.size();i++){
-		inFrame.setDataPoint(i,SPI_transaction(0));
+		inFrame[i] =SPI_transaction(0);
 	}
 	//Once more to pull the LQI
 	uint8_t LQI = SPI_transaction(0);
