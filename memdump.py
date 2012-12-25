@@ -188,7 +188,7 @@ while True:
 		print("Reading radio memory, using spi function")
 		del currentList[0:len(currentList)]
 		for addr in range(0x2F):
-			currentList.append(radio_reg_read(addr))
+			currentList.append(spi_reg_read(addr))
 	if "compare" == cmdIn[0]:
 		print("Comparing the two lists for differences")
 		difference = False
