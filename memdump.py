@@ -159,6 +159,11 @@ def radio_change_channel(newChannel):
 	ser.write(bytes(b"\n"))
 	#This just reads junk data
 	ser.readline()
+	
+#reset the radio
+def radio_reset():
+	ser.write(bytes(b"r"))
+	ser.write(bytes(b"x"))
 
 list1 = []
 list2 = []
@@ -212,11 +217,14 @@ while True:
 		print("Outputting currentList in ascii")
 		print(str(bytes(currentList)))
 	if "radio_write" == cmdIn[0]:
-		print("Writing " + str(cmdIn[2]) + " to radio register " + int(str(cmdIn[1]),16))
+		print("Writing " + str(cmdIn[2]) + " to radio register 0x" + str(int(str(cmdIn[1]),16)))
 		spi_reg_write(int(cmdIn[1]),int(cmdIn[2]))
 	if "rcc" == cmdIn[0]:
 		print("Changing radio channel to " + str(cmdIn[1]))
 		radio_change_channel(cmdIn[1])
+	if "radio_reset" == cmdIn[0]:
+		print("Resetting radio")
+		radio_reset()
 	if "help" == cmdIn[0]:
 		print("This is a command interpreter to interface with the microcontroller.")
 		print("There are two lists, which hold the incoming data.")

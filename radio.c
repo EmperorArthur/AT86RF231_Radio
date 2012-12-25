@@ -3,7 +3,7 @@
 //GPL V3
 #include "radio.h"
 #include "spi.h"
-#include <stdlib.h> 
+#include <stdlib.h> //for malloc and free
 #include <assert.h>
 #include "at86rf230_registermap.h"
 
@@ -54,7 +54,7 @@ uint8_t radioFrame::getDataPoint(uint8_t location){
 }
 
 uint8_t radio_reg_read(uint8_t address){
-	address = (address & 0x7F) | 0b10000000;
+	address = (address & 0x3F) | 0b10000000;
 	SS_low();
 	//Send the register address
 	SPI_transaction(address);
@@ -125,6 +125,10 @@ void radio_set_pan_id(uint16_t pan_id){
 }
 void radio_set_mode(uint8_t newMode){
 	radio_reg_write(RG_TRX_STATE,newMode);
+	//This handles conditions where the status for newmode is not newmode
+	if(CMD_FORCE_TRX_OFF == newMode){
+		newMode = TRX_OFF;
+	}
 	//Wait until the state is set
 	while( !(radio_reg_read(RG_TRX_STATUS) & newMode));
 }
@@ -132,16 +136,16 @@ void radio_setup(){
 	spi_setup();
 	
 	//Set radio state to trx_off
-	//radio_set_mode(TRX_OFF);
+	radio_set_mode(CMD_FORCE_TRX_OFF);
 	
 	//Use max power (default)
 	//uint8_t power = 0x00;
 	//radio_reg_write(RG_PHY_TX_PWR,0b11000000 | (power & 0x0F));
 	
 	// Use automatic CRC on transmit
-	radio_enable_CRC();
+	//radio_enable_CRC();
 	//Enable radio LED on transmit
-	radio_enable_LED();
+	//radio_enable_LED();
 	
 	//got these from defconfig.mk for my transmitter
 	radio_set_channel(0x15);

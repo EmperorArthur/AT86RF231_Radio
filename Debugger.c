@@ -52,12 +52,18 @@ void __cxa_pure_virtual(void) {};
 using namespace std;
 //END Nesicary C++ crap
 
-	
+//Possibly put this in radio.h/c
+#include <util/delay.h>
+#define RADIO_RST() DDRD |= _BV(PD6);PORTD &= ~_BV(PD6);_delay_ms(1000);PORTD |= _BV(PD6);
+#define SET_SLP_TR_LOW() DDRB |= _BV(PB0); PORTB &= ~_BV(PB0);
+
 void setup()
 {
 	//Disable interupts during setup
 	cli();
 	communication_setup();
+	SET_SLP_TR_LOW();
+	RADIO_RST();
 	radio_setup();
 	BlinkLED(1000,1);
 
@@ -146,6 +152,9 @@ void loop(){
 				case 'c':
 					scanf("%i",&temp);
 					radio_set_channel((uint8_t) temp);
+					break;
+				case 'x':
+					RADIO_RST();
 					break;
 			}
 			break;

@@ -3,6 +3,7 @@
 //GPL V3
 #ifndef RADIO_H
 #define RADIO_H
+
 //This is purely to define uint8_t
 #include <avr/io.h>
 
