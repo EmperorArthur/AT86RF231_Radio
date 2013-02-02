@@ -20,24 +20,55 @@
 #define TRX_CTRL_1		(0x04)
 
 radioFrame::radioFrame(){
+	crc16 = 0;
+}
+radioFrame::radioFrame(uint8_t newSize){
+	crc16=0;
+	setSize(newSize);
+}
+radioFrame::~radioFrame(){
+	//Nothing to do, data handles it's own cleanup
+}
+void radioFrame::setSize(uint8_t newSize){
+	//Minimum frame size is 3 (including the crc)
+	if(2 >= newSize || maxSize <= newSize){
+		data.setSize(0);
+	}else{
+		data.setSize(newSize-2);
+	}
+}
+uint8_t radioFrame::size(){
+	return data.size()+2;
+}
+//This lets me read and write to this thing as though it where a simple array
+uint8_t & radioFrame::operator[] (uint8_t location){
+	uint8_t mySize = data.size()+2;
+	//Location is unsigned, so not worrying about negative numbers
+	assert(location < mySize);
+	//Handle crc
+	if(location == mySize - 2){
+		return crc[0];
+	}else if(location == mySize - 1){
+		return crc[1];
+	}else{
+		return data[location];
+	}
+}
+
+radioData::radioData(){
 	mySize = 0;
 	data = NULL;
 }
-radioFrame::radioFrame(uint8_t newSize){
-	mySize = newSize;
-	data = (uint8_t *) malloc(mySize);
-	assert(NULL != data);/*
-	if(NULL == data){
-			//Malloc failed
-			mySize = 0;
-	}*/
-}
-radioFrame::~radioFrame(){
+radioData::~radioData(){
 	if (NULL != data){
 		free(data);
 	}
 }
-void radioFrame::setSize(uint8_t newSize){
+radioData::radioData(uint8_t newSize){
+	data = NULL;
+	setSize(newSize);
+}
+void radioData::setSize(uint8_t newSize){
 	if (NULL != data){
 		free(data);
 	}
@@ -55,25 +86,10 @@ void radioFrame::setSize(uint8_t newSize){
 		}*/
 	}
 }
-uint8_t radioFrame::getSize(){
+uint8_t radioData::size(){
 	return mySize;
 }
-uint8_t radioFrame::size(){
-	return mySize;
-}
-void radioFrame::setDataPoint(uint8_t location,uint8_t newDataPoint){
-	assert(NULL != data);
-	//Location is unsigned, so not worrying about negative numbers
-	assert(location < mySize);
-	data[location] = newDataPoint;
-}
-uint8_t radioFrame::getDataPoint(uint8_t location){
-	assert(NULL != data);
-	//Location is unsigned, so not worrying about negative numbers
-	assert(location < mySize);
-	return data[location];
-}
-uint8_t & radioFrame::operator[] (uint8_t location){
+uint8_t & radioData::operator[] (uint8_t location){
 	assert(NULL != data);
 	//Location is unsigned, so not worrying about negative numbers
 	assert(location < mySize);
@@ -110,7 +126,7 @@ void radio_Frame_write(radioFrame outFrame){
 	SPI_transaction(outFrame.size());
 	//Send the data
 	for (int i = 0; i < outFrame.size();i++){
-		SPI_transaction(outFrame.getDataPoint(i));
+		SPI_transaction(outFrame[i]);
 	}
 	SS_high();
 }

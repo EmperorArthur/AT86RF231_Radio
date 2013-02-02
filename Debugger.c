@@ -108,9 +108,11 @@ void loop(){
 					radio_Frame_read(aFrame);
 					printf("%i",aFrame.size());
 					printf("\n");
-					for(int i=0;i<aFrame.size();i++){
+					for(int i=0;i<aFrame.data.size();i++){
 						printf("%c",aFrame[i]);
 					}
+					printf("\n");
+					printf("%u",aFrame.crc16);
 					printf("\n");
 					break;
 			}

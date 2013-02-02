@@ -9,6 +9,23 @@
 //This contains all the AVR specific code
 #include "radio-avr.h"
 
+//This is the data in the radio frame
+//Warning, changing the data size deletes everything
+struct radioData{
+	public:
+		radioData();
+		~radioData();
+		radioData(uint8_t newSize);
+		void setSize(uint8_t newSize);
+		uint8_t size();
+		uint8_t & operator[] (uint8_t location);
+	private:
+		//Max size is 127 bytes -2 for crc16
+		static const uint8_t maxSize = 125;
+		uint8_t mySize;
+		uint8_t * data;
+		
+};
 //This is the frame to send to the radio
 //Warning, changing the frame size deletes everything in data
 struct radioFrame {
@@ -17,17 +34,17 @@ struct radioFrame {
 		radioFrame(uint8_t newSize);
 		~radioFrame();
 		void setSize(uint8_t newSize);
-		//These two are the same thing (consider removing one of them)
-		uint8_t getSize();
 		uint8_t size();
 		uint8_t & operator[] (uint8_t location);
-		//Consider removing these now that I've implemented operator overloading
-		void setDataPoint(uint8_t location,uint8_t newDataPoint);
-		uint8_t getDataPoint(uint8_t location);
+		//These probably should be private, but I'm lazy
+		union{
+			uint8_t crc[2];
+			uint16_t crc16;
+		};
+		radioData data; //mySize -2 (since the last two bytes are the crc
 	private:
+		//Max size is 127 bytes
 		static const uint8_t maxSize = 127;
-		uint8_t mySize; //Max size is 127 bytes
-		uint8_t * data;
 };
 
 
