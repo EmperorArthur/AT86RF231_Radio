@@ -75,9 +75,9 @@ int communication_setup(){
 		com_stream = fdevopen(
 			com_putchar_f,
 			com_getchar_f);
-		stdout = stdin = com_stream;
+		stdout = stdin = stderr = com_stream;
 	#else
-		stdout = &com_stream;
+		stdout = stderr = &com_stream;
 	#endif
 	return 0;
 }

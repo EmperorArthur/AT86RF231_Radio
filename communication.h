@@ -18,7 +18,7 @@ void com_putchar(unsigned char outChar);
 class ringBuff{
 	public:
 		ringBuff();
-		const static int size = 128;
+		const static int size = 32;
 		int push(char aChar);	//Push a char into the buffer (returns '-1' if full, otherwise 0)
 		char pull();			//remove a char from the buffer (spinlocks if the buffer is empty)
 		int getUsed();
