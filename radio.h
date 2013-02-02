@@ -9,9 +9,16 @@
 //This contains all the AVR specific code
 #include "radio-avr.h"
 
+//This is a raw radio frame, used as a parent class only
+struct rawFrame{
+	virtual void setSize(uint8_t newSize);
+	virtual uint8_t size();
+	virtual uint8_t & operator[] (uint8_t location);
+};
+
 //This is the data in the radio frame
 //Warning, changing the data size deletes everything
-struct radioData{
+struct radioData: public rawFrame{
 	public:
 		radioData();
 		~radioData();
@@ -30,7 +37,7 @@ struct radioData{
 };
 //This is the frame to send to the radio
 //Warning, changing the frame size deletes everything in data
-struct radioFrame {
+struct radioFrame: public rawFrame{
 	public:
 		radioFrame();
 		radioFrame(uint8_t newSize);
@@ -53,10 +60,10 @@ struct radioFrame {
 uint8_t radio_reg_read(uint8_t address);
 uint8_t radio_reg_write(uint8_t address, uint8_t data);
 //Write to the frame buffer
-void radio_Frame_write(radioFrame &outFrame);
+void radio_Frame_write(rawFrame &outFrame);
 //read from the frame buffer
 //Returns the LQI (Link Quality Information)
-uint8_t radio_Frame_read(radioFrame &inFrame);
+uint8_t radio_Frame_read(rawFrame &inFrame);
 //Enable the LED on the transmit side (don't know if the LED works)
 void radio_enable_LED();
 // Use automatic CRC on transmit

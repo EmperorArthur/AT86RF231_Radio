@@ -136,7 +136,7 @@ uint8_t radio_reg_write(uint8_t address, uint8_t data){
 	return regValue;
 }
 
-void radio_Frame_write(radioFrame &outFrame){
+void radio_Frame_write(rawFrame &outFrame){
 	SS_low();
 	//fb write mode
 	SPI_transaction(0b01100000);
@@ -151,7 +151,7 @@ void radio_Frame_write(radioFrame &outFrame){
 	radio_transmit();
 }
 
-uint8_t radio_Frame_read(radioFrame &inFrame){
+uint8_t radio_Frame_read(rawFrame &inFrame){
 	SS_low();
 	//fb read mode
 	SPI_transaction(0b00100000);
