@@ -4,6 +4,8 @@
 #include "radio.h"
 #include "spi.h"
 #include <stdlib.h> //for malloc and free
+#include "communication.h" //For stderr
+#define __ASSERT_USE_STDERR
 #include <assert.h>
 #include "at86rf230_registermap.h"
 
@@ -24,6 +26,11 @@ radioFrame::radioFrame(){
 radioFrame::radioFrame(uint8_t newSize){
 	mySize = newSize;
 	data = (uint8_t *) malloc(mySize);
+	assert(NULL != data);/*
+	if(NULL == data){
+			//Malloc failed
+			mySize = 0;
+	}*/
 }
 radioFrame::~radioFrame(){
 	if (NULL != data){
@@ -31,33 +38,45 @@ radioFrame::~radioFrame(){
 	}
 }
 void radioFrame::setSize(uint8_t newSize){
-	mySize = newSize;
 	if (NULL != data){
 		free(data);
 	}
-	if(0 != newSize){
+	//It's unsigned, so I'm not worried about negative numbers
+	if(0 == newSize || maxSize <= newSize){
+		mySize = 0;
+		data = NULL;
+	}else{
+		mySize = newSize;
 		data = (uint8_t *) malloc(mySize);
+		assert(NULL != data);/*
+		if(NULL == data){
+			//Malloc failed
+			mySize = 0;
+		}*/
 	}
 }
 uint8_t radioFrame::getSize(){
 	return mySize;
 }
 uint8_t radioFrame::size(){
-	return getSize();
+	return mySize;
 }
 void radioFrame::setDataPoint(uint8_t location,uint8_t newDataPoint){
 	assert(NULL != data);
-	assert( (0 < location) && (location < mySize));
+	//Location is unsigned, so not worrying about negative numbers
+	assert(location < mySize);
 	data[location] = newDataPoint;
 }
 uint8_t radioFrame::getDataPoint(uint8_t location){
 	assert(NULL != data);
-	assert( (0 < location) && (location < mySize));
+	//Location is unsigned, so not worrying about negative numbers
+	assert(location < mySize);
 	return data[location];
 }
 uint8_t & radioFrame::operator[] (uint8_t location){
 	assert(NULL != data);
-	assert( (0 < location) && (location < mySize));
+	//Location is unsigned, so not worrying about negative numbers
+	assert(location < mySize);
 	return data[location];
 }
 
@@ -96,7 +115,7 @@ void radio_Frame_write(radioFrame outFrame){
 	SS_high();
 }
 
-uint8_t radio_Frame_read(radioFrame inFrame){
+uint8_t radio_Frame_read(radioFrame &inFrame){
 	SS_low();
 	//fb read mode
 	SPI_transaction(0b00100000);
@@ -105,7 +124,7 @@ uint8_t radio_Frame_read(radioFrame inFrame){
 	//Data is initalized by setSize(...)
 	//Read the data
 	for (int i = 0; i < inFrame.size();i++){
-		inFrame[i] =SPI_transaction(0);
+		inFrame[i] = SPI_transaction(0);
 	}
 	//Once more to pull the LQI
 	uint8_t LQI = SPI_transaction(0);
@@ -170,7 +189,7 @@ void radio_setup(){
     //tat_configure_csma(234, 0xE2);
 	
 	//Enable the recieving data interupt
-	//I'm ignoring proper fram protocol, so recieve done doesn't work
+	//I'm ignoring proper frame protocol, so recieve done doesn't work
 	radio_reg_write(RG_IRQ_MASK,_BV(IRQ_RX_START));
 	
 	//Set state to RX_ON

@@ -137,7 +137,14 @@ def spi_read_frame():
 	ser.write(bytes(b"s"))
 	ser.write(bytes(b"h"))
 	return (size,frame)
-
+#Read a frame from memory using the radio function
+def radio_read_frame():
+	frame = []
+	ser.write(bytes(b"r"))
+	ser.write(bytes(b"f"))
+	#More stuff here
+	################################################################
+	return (size,frame)
 #Write a frame to memory using SPI debug
 def spi_write_frame(size):
 	frame = []

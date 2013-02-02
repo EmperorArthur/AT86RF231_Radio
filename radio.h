@@ -17,6 +17,7 @@ struct radioFrame {
 		radioFrame(uint8_t newSize);
 		~radioFrame();
 		void setSize(uint8_t newSize);
+		//These two are the same thing (consider removing one of them)
 		uint8_t getSize();
 		uint8_t size();
 		uint8_t & operator[] (uint8_t location);
@@ -24,6 +25,7 @@ struct radioFrame {
 		void setDataPoint(uint8_t location,uint8_t newDataPoint);
 		uint8_t getDataPoint(uint8_t location);
 	private:
+		static const uint8_t maxSize = 127;
 		uint8_t mySize; //Max size is 127 bytes
 		uint8_t * data;
 };
@@ -35,7 +37,7 @@ uint8_t radio_reg_write(uint8_t address, uint8_t data);
 void radio_Frame_write(radioFrame outFrame);
 //read from the frame buffer
 //Returns the LQI (Link Quality Information)
-uint8_t radio_Frame_read(radioFrame inFrame);
+uint8_t radio_Frame_read(radioFrame &inFrame);
 //Enable the LED on the transmit side (don't know if the LED works)
 void radio_enable_LED();
 // Use automatic CRC on transmit

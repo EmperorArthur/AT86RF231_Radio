@@ -34,6 +34,7 @@ void loop(){
 	volatile unsigned char * address = 0;
 	int temp = 0;
 	uint8_t value = 0;
+	radioFrame aFrame;
 	controllChar = getchar();
 	switch (controllChar){
 		//Memory Functions
@@ -98,8 +99,19 @@ void loop(){
 					scanf("%i",&temp);
 					radio_set_channel((uint8_t) temp);
 					break;
+				//Reset the radio
 				case 'x':
 					RADIO_RST();
+					break;
+				//Read a radio frame
+				case 'f':
+					radio_Frame_read(aFrame);
+					printf("%i",aFrame.size());
+					printf("\n");
+					for(int i=0;i<aFrame.size();i++){
+						printf("%c",aFrame[i]);
+					}
+					printf("\n");
 					break;
 			}
 			break;
