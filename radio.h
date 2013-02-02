@@ -53,7 +53,7 @@ struct radioFrame {
 uint8_t radio_reg_read(uint8_t address);
 uint8_t radio_reg_write(uint8_t address, uint8_t data);
 //Write to the frame buffer
-void radio_Frame_write(radioFrame outFrame);
+void radio_Frame_write(radioFrame &outFrame);
 //read from the frame buffer
 //Returns the LQI (Link Quality Information)
 uint8_t radio_Frame_read(radioFrame &inFrame);
@@ -73,6 +73,8 @@ void radio_set_pan_id(uint16_t pan_id);
 //If something breaks, this function will HANG.
 //No errors are currently returned
 void radio_set_mode(uint8_t newMode);
+//Actually transmit a radio frame, returning to RX_ON mode when done
+void radio_transmit();
 void radio_setup();
 
 #endif

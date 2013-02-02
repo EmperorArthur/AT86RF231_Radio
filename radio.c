@@ -136,7 +136,7 @@ uint8_t radio_reg_write(uint8_t address, uint8_t data){
 	return regValue;
 }
 
-void radio_Frame_write(radioFrame outFrame){
+void radio_Frame_write(radioFrame &outFrame){
 	SS_low();
 	//fb write mode
 	SPI_transaction(0b01100000);
@@ -147,6 +147,8 @@ void radio_Frame_write(radioFrame outFrame){
 		SPI_transaction(outFrame[i]);
 	}
 	SS_high();
+	//Now tell the radio to actually send the frame
+	radio_transmit();
 }
 
 uint8_t radio_Frame_read(radioFrame &inFrame){
@@ -192,6 +194,15 @@ void radio_set_mode(uint8_t newMode){
 	}
 	//Wait until the state is set
 	while( !(radio_reg_read(RG_TRX_STATUS) & newMode));
+}
+void radio_transmit(){
+	//Need to be in PLL_ON to start transmitting
+	radio_set_mode(CMD_PLL_ON);
+	radio_reg_write(RG_TRX_STATE,CMD_TX_START);
+	//Wait untill we're back in PLL_ON (TX is done)
+	while( !(radio_reg_read(RG_TRX_STATUS) & CMD_PLL_ON));
+	//Go back to recieve mode
+	radio_set_mode(RX_ON);
 }
 void radio_setup(){
 	spi_setup();

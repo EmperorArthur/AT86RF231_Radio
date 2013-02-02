@@ -121,6 +121,7 @@ void loop(){
 					aFrame.data = "test\n";
 					printf("%i\n",aFrame.data.size());
 					printf("%s\n",aFrame.data.c_str());
+					radio_Frame_write(aFrame);
 					break;
 			}
 			break;
