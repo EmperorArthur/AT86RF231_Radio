@@ -115,6 +115,13 @@ void loop(){
 					printf("%u",aFrame.crc16);
 					printf("\n");
 					break;
+				//Transmit a radio frame
+				case 't':
+					aFrame.data.setSize(5);
+					aFrame.data = "test\n";
+					printf("%i\n",aFrame.data.size());
+					printf("%s\n",aFrame.data.c_str());
+					break;
 			}
 			break;
 	}

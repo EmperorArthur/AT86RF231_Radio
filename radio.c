@@ -78,7 +78,7 @@ void radioData::setSize(uint8_t newSize){
 		data = NULL;
 	}else{
 		mySize = newSize;
-		data = (uint8_t *) malloc(mySize);
+		data = (uint8_t *) malloc(mySize+1);
 		assert(NULL != data);/*
 		if(NULL == data){
 			//Malloc failed
@@ -94,6 +94,24 @@ uint8_t & radioData::operator[] (uint8_t location){
 	//Location is unsigned, so not worrying about negative numbers
 	assert(location < mySize);
 	return data[location];
+}
+void radioData::operator= (char* cString){
+	int stringSize = 0;
+	char * strPointer = cString;
+	//Find the size of the string
+	while('\0' != *strPointer){
+		strPointer++;
+		stringSize++;
+	}
+	setSize(stringSize);
+	for(int i=0;i<stringSize;i++){
+		data[i] = cString[i];
+	}
+}
+char * radioData::c_str(){
+	//This is the only place were the last byte of data is ever used
+	data[mySize] = '\0';
+	return (char *) data;
 }
 
 uint8_t radio_reg_read(uint8_t address){

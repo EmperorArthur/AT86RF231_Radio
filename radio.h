@@ -19,11 +19,13 @@ struct radioData{
 		void setSize(uint8_t newSize);
 		uint8_t size();
 		uint8_t & operator[] (uint8_t location);
+		void operator= (char* cString);
+		char * c_str();
 	private:
 		//Max size is 127 bytes -2 for crc16
 		static const uint8_t maxSize = 125;
 		uint8_t mySize;
-		uint8_t * data;
+		uint8_t * data;	//Data is 1 byte larger than provisioned to allow for conversion into a C string
 		
 };
 //This is the frame to send to the radio
