@@ -20,6 +20,11 @@ void setup()
 	cli();
 	communication_setup();
 	radio_setup();
+	//Set up IRQ pin for radio interupt (input, no pull up)
+	DDRB &= ~_BV(PB1);
+	PORTB &= ~_BV(PB1);
+	PCICR |= _BV(PCIE0);
+	PCMSK0 |= _BV(PCINT1);
 	BlinkLED(1000,1);
 
 	printf("Debugger Initalized, awaiting commands\n\r");
@@ -135,6 +140,18 @@ ISR(BADISR_vect){
 		printf("Warning:  Uncaught Interupt Detected!!!\n\r");
 		BlinkLED(100,20);
 	}
+}
+//This handles if the radio toggled the IRQ line
+ISR(PCINT0_vect){
+	cli();
+		//If we have a frame waiting to be read
+		if(radio_reg_read(0x0f) & 0x04){
+			//Read and print it
+			radioFrame aFrame;
+			radio_Frame_read(aFrame);
+			printf("%s",aFrame.data.c_str());
+		}
+	sei();
 }
 
 int main(){
