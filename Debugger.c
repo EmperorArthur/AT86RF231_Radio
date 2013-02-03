@@ -33,12 +33,15 @@ void setup()
 	sei();
 }
 
+unsigned int counter = 33;
+	
 //This is a quick interpreter that allows for direct memory access by the user
 void loop(){
 	char controllChar;
 	volatile unsigned char * address = 0;
 	int temp = 0;
 	uint8_t value = 0;
+	frameControlField fcf1;
 	radioFrame aFrame;
 	controllChar = getchar();
 	switch (controllChar){
@@ -111,20 +114,18 @@ void loop(){
 				//Read a radio frame
 				case 'f':
 					radio_Frame_read(aFrame);
-					printf("%i",aFrame.size());
-					printf("\n");
-					for(int i=0;i<aFrame.data.size();i++){
-						printf("%c",aFrame[i]);
-					}
-					printf("\n");
-					printf("%u",aFrame.crc16);
-					printf("\n");
+					printf("\nFrame Size:  %i\n",aFrame.size());
+					printf("FCF:  %u\n",aFrame.fcf);
+					printf("Sequence Number is:  %u\n",aFrame.sequenceNumber);
+					printf("%s\n",aFrame.data.c_str());
+					printf("CRC is:  %u\n",aFrame.crc16);
 					break;
 				//Transmit a radio frame
 				case 't':
-					aFrame.data.setSize(5);
-					aFrame.data = "test\n";
-					printf("%i\n",aFrame.data.size());
+					aFrame.fcf = fcf1.pack();
+					printf("\nFCF:  %u\n",aFrame.fcf);
+					aFrame.sequenceNumber = counter++;
+					aFrame.data = "This_is_a_test.01234567890\n";
 					printf("%s\n",aFrame.data.c_str());
 					radio_Frame_write(aFrame);
 					break;
@@ -144,13 +145,23 @@ ISR(BADISR_vect){
 //This handles if the radio toggled the IRQ line
 ISR(PCINT0_vect){
 	cli();
+	//If IRQ is high
+	if(PINB & _BV(PB1)){
+		//Read the interupt
+		uint8_t radio_interupt_vector = radio_reg_read(0x0F);
 		//If we have a frame waiting to be read
-		if(radio_reg_read(0x0f) & 0x04){
+		if(radio_interupt_vector & 0x04 || radio_interupt_vector & 0x08){
 			//Read and print it
 			radioFrame aFrame;
 			radio_Frame_read(aFrame);
 			printf("%s",aFrame.data.c_str());
+		}else{
+			//Let the user know
+			printf("\nUnhandled radio interupt:  %u\n",radio_interupt_vector);
+			printf("IRQ mask is:  %u\n",radio_reg_read(0x0E));
+			printf("Radio mode is:  %u\n",radio_reg_read(0x01));
 		}
+	}
 	sei();
 }
 
@@ -158,7 +169,8 @@ int main(){
 	setup();
 	for(;;){
 		loop();
-		//BlinkLED(500,3);
+		//This slows register reads to a crawl
+		BlinkLED(500,3);
 	}
 	return 0;
 }

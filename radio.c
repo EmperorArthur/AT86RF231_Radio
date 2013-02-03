@@ -20,6 +20,8 @@
 #define TRX_CTRL_1		(0x04)
 
 radioFrame::radioFrame(){
+	fcf = 0;
+	sequenceNumber = 0;
 	crc16 = 0;
 }
 radioFrame::radioFrame(uint8_t newSize){
@@ -31,28 +33,36 @@ radioFrame::~radioFrame(){
 }
 void radioFrame::setSize(uint8_t newSize){
 	//Minimum frame size is 3 (including the crc)
-	if(2 >= newSize || maxSize <= newSize){
+	if(dataPlus >= newSize || maxSize <= newSize){
 		data.setSize(0);
 	}else{
-		data.setSize(newSize-2);
+		data.setSize(newSize-dataPlus);
 	}
 }
 uint8_t radioFrame::size(){
-	return data.size()+2;
+	return data.size()+dataPlus;
 }
 //This lets me read and write to this thing as though it where a simple array
 uint8_t & radioFrame::operator[] (uint8_t location){
-	uint8_t mySize = data.size()+2;
+	uint8_t mySize = data.size()+dataPlus;
 	//Location is unsigned, so not worrying about negative numbers
 	assert(location < mySize);
+	//Handle fcf
+	if(location == 0){
+		return fcf8[1];
+	}else if(location == 1){
+		return fcf8[0];
+	//Handle sequence number
+	}else if(location == 2){
+		return sequenceNumber;
 	//Handle crc
-	if(location == mySize - 2){
-		return crc[0];
-	}else if(location == mySize - 1){
+	}else if(location == mySize - 2){
 		return crc[1];
-	}else{
-		return data[location];
+	}else if(location == mySize - 1){
+		return crc[0];
 	}
+	//If nothing else, return data
+	return data[location - 3];
 }
 
 radioData::radioData(){
@@ -98,7 +108,7 @@ uint8_t & radioData::operator[] (uint8_t location){
 void radioData::operator= (char* cString){
 	int stringSize = 0;
 	char * strPointer = cString;
-	//Find the size of the string
+	//Find the size of the string (excluding null terminator)
 	while('\0' != *strPointer){
 		strPointer++;
 		stringSize++;
@@ -112,6 +122,46 @@ char * radioData::c_str(){
 	//This is the only place were the last byte of data is ever used
 	data[mySize] = '\0';
 	return (char *) data;
+}
+
+//This sets the defaults to known semi-sane values
+frameControlField::frameControlField(){
+	frameType = DATA;
+	securityEnabled = false;
+	framePending = false;
+	requestACK = false;
+	intraPAN = false;
+	dstAddrMode = NOADDR;
+	frameVersion = 0;		//Compatable with both 2003 and 2006 specs
+	srcAddrMode = NOADDR;
+}
+//Pack the fcf into two bytes
+uint16_t frameControlField::pack(){
+/*
+	union{
+		uint8_t fcf8[2];
+		uint16_t fcf;
+	};
+	fcf8[0] |= (frameType&0x07 << 5);
+	fcf8[0] |= (securityEnabled&0x01 << 4);
+	fcf8[0] |= (framePending&0x01 << 3);
+	fcf8[0] |= (requestACK&0x01 << 2);
+	fcf8[0] |= (intraPAN&0x01 << 1);
+	
+	fcf8[1] |= (dstAddrMode&0x03 << 4);
+	fcf8[1] |= (frameVersion&0x03 << 2);
+	fcf8[1] |= (srcAddrMode&0x03 << 0);
+	return fcf;*/
+	uint16_t fcfPacked = 0x00;
+	fcfPacked |= ((frameType&0x07) << 12);
+	fcfPacked |= ((securityEnabled&0x01) << 11);
+	fcfPacked |= ((framePending&0x01) << 10);
+	fcfPacked |= ((requestACK&0x01) << 9);
+	fcfPacked |= ((intraPAN&0x01) << 8);
+	fcfPacked |= ((dstAddrMode&0x03) << 5);
+	fcfPacked |= ((frameVersion&0x03) << 2);
+	fcfPacked |= ((srcAddrMode&0x03) << 0);
+	return fcfPacked;
 }
 
 uint8_t radio_reg_read(uint8_t address){
@@ -236,8 +286,8 @@ void radio_setup(){
     //tat_configure_csma(234, 0xE2);
 	
 	//Enable the recieving data interupt
-	//I'm ignoring proper frame protocol, so recieve done doesn't work
-	radio_reg_write(RG_IRQ_MASK,_BV(IRQ_RX_START));
+	//Note, when not using proper frame protocol, use IRQ_RX_START instead of IRQ_TRX_END
+	radio_reg_write(RG_IRQ_MASK,_BV(IRQ_TRX_END));
 	
 	//Set state to RX_ON
 	radio_set_mode(RX_ON);
