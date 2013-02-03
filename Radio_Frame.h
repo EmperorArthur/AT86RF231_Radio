@@ -25,7 +25,7 @@ struct frameControlField{
 	void unpack(uint16_t inFCF);	//Unpacks an incoming fcf
 	
 	//4-7 are reserved
-	enum {BEACON = 0, DATA = 1, ACK = 2, MACCMD = 3, R4=4,R5=5,R6=6,R7=7} frameType;
+	enum ft {BEACON = 0, DATA = 1, ACK = 2, MACCMD = 3, R4=4,R5=5,R6=6,R7=7} frameType;
 	bool securityEnabled;	//This should always be false
 	bool framePending;		//Not sure about this one, leave it false
 	bool requestACK;		//Only use if in TX_ARET state, and reciever is in RX_AACK state

@@ -115,6 +115,14 @@ void loop(){
 				case 'f':
 					radio_Frame_read(aFrame);
 					printf("\nFrame Size:  %i\n",aFrame.size());
+					printf("frameType:  %u\n",aFrame.fcf.frameType);
+					printf("securityEnabled:  %u\n",aFrame.fcf.securityEnabled);
+					printf("framePending:  %u\n",aFrame.fcf.framePending);
+					printf("requestACK:  %u\n",aFrame.fcf.requestACK);
+					printf("intraPAN:  %u\n",aFrame.fcf.intraPAN);
+					printf("dstAddrMode:  %u\n",aFrame.fcf.dstAddrMode);
+					printf("frameVersion:  %u\n",aFrame.fcf.frameVersion);
+					printf("srcAddrMode:  %u\n",aFrame.fcf.srcAddrMode);
 					printf("Sequence Number is:  %u\n",aFrame.sequenceNumber);
 					printf("%s\n",aFrame.data.c_str());
 					printf("CRC is:  %u\n",aFrame.crc16);

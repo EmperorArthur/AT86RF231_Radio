@@ -61,7 +61,7 @@ void radioFrame::pack(){
 	TempFcf = fcf.pack();
 }
 void radioFrame::unpack(){
-	//fcf.unpack(TempFcf);//////////////////////////////////////////////////////////////////
+	fcf.unpack(TempFcf);
 }
 
 radioData::radioData(){
@@ -146,5 +146,16 @@ uint16_t frameControlField::pack(){
 	fcfPacked |= ((frameVersion&0x03) << 2);
 	fcfPacked |= ((srcAddrMode&0x03) << 0);
 	return fcfPacked;
+}
+//Unpack two bytes into an fcf
+void frameControlField::unpack(uint16_t inFCF){
+	frameType =			(ft)((inFCF >> 12) & 0x07);
+	securityEnabled = 	(inFCF >> 11) & 0x01;
+	framePending =		(inFCF >> 10) & 0x01;
+	requestACK =		(inFCF >> 9) & 0x01;
+	intraPAN =			(inFCF >> 8) & 0x01;
+	dstAddrMode =		(AddressingMode)((inFCF >> 5) & 0x03);
+	frameVersion =		(inFCF >> 2) & 0x03;
+	srcAddrMode =		(AddressingMode)((inFCF >> 0) & 0x03);
 }
 
