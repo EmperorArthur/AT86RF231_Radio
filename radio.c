@@ -7,10 +7,6 @@
 
 //This lets me set individual bits in a register high
 #define REG_OR_ENABLE(address,data) uint8_t temp = radio_reg_read(address); temp |= data; radio_reg_write(address,temp);
-//Easily defined stuff not in the registermap
-#define IRQ_PLL_LOCK 0
-#define IRQ_RX_START 2
-#define IRQ_TRX_END 3
 //I'm using an AT86RF231, so I have some extra features (like some LED Outs, and auto CRC)
 #define PA_EXT_EN		7
 #define TX_AUTO_CRC_ON	5

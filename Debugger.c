@@ -13,6 +13,7 @@
 #include "LED.h"
 #include "radio.h"
 #include "spi.h"
+#include "at86rf230_registermap.h"
 
 void setup()
 {
@@ -165,18 +166,22 @@ ISR(PCINT0_vect){
 	//If IRQ is high
 	if(PINB & _BV(PB1)){
 		//Read the interupt
-		uint8_t radio_interupt_vector = radio_reg_read(0x0F);
+		uint8_t radio_interupt_vector = radio_reg_read(RG_IRQ_STATUS);
 		//If we have a frame waiting to be read
-		if(radio_interupt_vector & 0x08){
-			//Read and print it
-			radioFrame aFrame;
-			radio_Frame_read(aFrame);
-			printf("%s",aFrame.data.c_str());
+		if(radio_interupt_vector & _BV(IRQ_TRX_END)){
+			if(radio_reg_read(RG_PHY_RSSI)&_BV(RX_CRC_VALID)){
+				//Read and print it
+				radioFrame aFrame;
+				radio_Frame_read(aFrame);
+				printf("%s",aFrame.data.c_str());
+			}else{
+				printf("\nRadio frame with invalid CRC Recieved\n");
+			}
 		}else{
 			//Let the user know
 			printf("\nUnhandled radio interupt:  %u\n",radio_interupt_vector);
-			printf("IRQ mask is:  %u\n",radio_reg_read(0x0E));
-			printf("Radio mode is:  %u\n",radio_reg_read(0x01));
+			printf("IRQ mask is:  %u\n",radio_reg_read(RG_IRQ_MASK));
+			printf("Radio mode is:  %u\n",radio_reg_read(RG_TRX_STATUS));
 		}
 	}
 	sei();

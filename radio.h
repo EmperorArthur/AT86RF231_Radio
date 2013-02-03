@@ -10,6 +10,12 @@
 //This contains all the AVR specific code
 #include "radio-avr.h"
 
+//Easily defined stuff not in the registermap
+#define IRQ_PLL_LOCK 0
+#define IRQ_RX_START 2
+#define IRQ_TRX_END 3
+#define RX_CRC_VALID 7
+
 uint8_t radio_reg_read(uint8_t address);
 uint8_t radio_reg_write(uint8_t address, uint8_t data);
 //Write to the frame buffer
