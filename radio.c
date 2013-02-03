@@ -180,11 +180,11 @@ void radio_set_channel(uint8_t channel){
 }
 void radio_set_address(uint16_t address){
 	radio_reg_write(RG_SHORT_ADDR_0,address & 0x00FF);
-	radio_reg_write(RG_SHORT_ADDR_1,address & 0xFF00);
+	radio_reg_write(RG_SHORT_ADDR_1,(address & 0xFF00 >> 8));
 }
 void radio_set_pan_id(uint16_t pan_id){
 	radio_reg_write(RG_PAN_ID_0,pan_id & 0x00FF);
-	radio_reg_write(RG_PAN_ID_1,pan_id & 0xFF00);
+	radio_reg_write(RG_PAN_ID_1,(pan_id & 0xFF00 >> 8));
 }
 void radio_set_mode(uint8_t newMode){
 	radio_reg_write(RG_TRX_STATE,newMode);
