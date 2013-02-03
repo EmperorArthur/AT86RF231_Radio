@@ -78,16 +78,13 @@ struct radioFrame: public rawFrame{
 			uint8_t crc[2];
 			uint16_t crc16;
 		};
-		//Use pack and unpack functions to set/read these
-		union{
-			uint8_t TempFcf8[2];
-			uint16_t TempFcf;
-		};
 	private:
 		//Max size is 127 bytes
 		static const uint8_t maxSize = 127;
 		//This is how many extra bytes to add to the data size
 		static const uint8_t dataPlus = 5;
+		//Use pack and unpack functions to set/read this
+		uint16_t TempFcf;
 };
 
 #endif

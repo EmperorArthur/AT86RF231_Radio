@@ -40,9 +40,11 @@ uint8_t & radioFrame::operator[] (uint8_t location){
 	assert(location < mySize);
 	//Handle fcf
 	if(location == 0){
-		return TempFcf8[1];
+		//return upper 8 bits
+		return *(((uint8_t*)&TempFcf)+1);
 	}else if(location == 1){
-		return TempFcf8[0];
+		//Return lower 8 bits
+		return (uint8_t&)TempFcf;
 	//Handle sequence number
 	}else if(location == 2){
 		return sequenceNumber;

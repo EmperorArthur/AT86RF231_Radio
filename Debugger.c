@@ -115,7 +115,6 @@ void loop(){
 				case 'f':
 					radio_Frame_read(aFrame);
 					printf("\nFrame Size:  %i\n",aFrame.size());
-					printf("FCF is:	%u\n",aFrame.TempFcf);
 					printf("Sequence Number is:  %u\n",aFrame.sequenceNumber);
 					printf("%s\n",aFrame.data.c_str());
 					printf("CRC is:  %u\n",aFrame.crc16);
