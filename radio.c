@@ -199,8 +199,10 @@ void radio_transmit(){
 	//Need to be in PLL_ON to start transmitting
 	radio_set_mode(CMD_PLL_ON);
 	radio_reg_write(RG_TRX_STATE,CMD_TX_START);
-	//Wait untill we're back in PLL_ON (TX is done)
-	while( !(radio_reg_read(RG_TRX_STATUS) & CMD_PLL_ON));
+	//This is needed, but I have yet to figure out why
+	_delay_ms(10);
+	//Wait untill TX is done
+	while((radio_reg_read(RG_TRX_STATUS) & 0x1F) == BUSY_TX);
 	//Go back to recieve mode
 	radio_set_mode(RX_ON);
 }
