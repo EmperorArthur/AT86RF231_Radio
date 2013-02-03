@@ -115,15 +115,13 @@ void loop(){
 				case 'f':
 					radio_Frame_read(aFrame);
 					printf("\nFrame Size:  %i\n",aFrame.size());
-					printf("FCF:  %u\n",aFrame.fcf);
+					printf("FCF is:	%u\n",aFrame.TempFcf);
 					printf("Sequence Number is:  %u\n",aFrame.sequenceNumber);
 					printf("%s\n",aFrame.data.c_str());
 					printf("CRC is:  %u\n",aFrame.crc16);
 					break;
 				//Transmit a radio frame
 				case 't':
-					aFrame.fcf = fcf1.pack();
-					printf("\nFCF:  %u\n",aFrame.fcf);
 					aFrame.sequenceNumber = counter++;
 					aFrame.data = "This_is_a_test.01234567890\n";
 					printf("%s\n",aFrame.data.c_str());
@@ -150,7 +148,7 @@ ISR(PCINT0_vect){
 		//Read the interupt
 		uint8_t radio_interupt_vector = radio_reg_read(0x0F);
 		//If we have a frame waiting to be read
-		if(radio_interupt_vector & 0x04 || radio_interupt_vector & 0x08){
+		if(radio_interupt_vector & 0x08){
 			//Read and print it
 			radioFrame aFrame;
 			radio_Frame_read(aFrame);

@@ -11,7 +11,7 @@
 #include <assert.h>
 
 radioFrame::radioFrame(){
-	fcf = 0;
+	TempFcf = 0;
 	sequenceNumber = 0;
 	crc16 = 0;
 }
@@ -40,9 +40,9 @@ uint8_t & radioFrame::operator[] (uint8_t location){
 	assert(location < mySize);
 	//Handle fcf
 	if(location == 0){
-		return fcf8[1];
+		return TempFcf8[1];
 	}else if(location == 1){
-		return fcf8[0];
+		return TempFcf8[0];
 	//Handle sequence number
 	}else if(location == 2){
 		return sequenceNumber;
@@ -54,6 +54,12 @@ uint8_t & radioFrame::operator[] (uint8_t location){
 	}
 	//If nothing else, return data
 	return data[location - 3];
+}
+void radioFrame::pack(){
+	TempFcf = fcf.pack();
+}
+void radioFrame::unpack(){
+	//fcf.unpack(TempFcf);//////////////////////////////////////////////////////////////////
 }
 
 radioData::radioData(){
@@ -128,21 +134,6 @@ frameControlField::frameControlField(){
 }
 //Pack the fcf into two bytes
 uint16_t frameControlField::pack(){
-/*
-	union{
-		uint8_t fcf8[2];
-		uint16_t fcf;
-	};
-	fcf8[0] |= (frameType&0x07 << 5);
-	fcf8[0] |= (securityEnabled&0x01 << 4);
-	fcf8[0] |= (framePending&0x01 << 3);
-	fcf8[0] |= (requestACK&0x01 << 2);
-	fcf8[0] |= (intraPAN&0x01 << 1);
-	
-	fcf8[1] |= (dstAddrMode&0x03 << 4);
-	fcf8[1] |= (frameVersion&0x03 << 2);
-	fcf8[1] |= (srcAddrMode&0x03 << 0);
-	return fcf;*/
 	uint16_t fcfPacked = 0x00;
 	fcfPacked |= ((frameType&0x07) << 12);
 	fcfPacked |= ((securityEnabled&0x01) << 11);

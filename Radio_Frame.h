@@ -12,6 +12,8 @@ struct rawFrame{
 	virtual void setSize(uint8_t newSize);
 	virtual uint8_t size();
 	virtual uint8_t & operator[] (uint8_t location);
+	virtual void pack(){};
+	virtual void unpack(){};
 };
 
 //This is the header for the radio frame
@@ -62,19 +64,24 @@ struct radioFrame: public rawFrame{
 		~radioFrame();
 		void setSize(uint8_t newSize);
 		uint8_t size();
+		//Pack and unpack the fcf
+		void pack();
+		void unpack();
 		uint8_t & operator[] (uint8_t location);
 		//This is the actual data in the frame
 		//These probably should be private, but I'm lazy
 		//Note for the unions: (0 is the low bit, 1 is the high bit)
-		union{
-			uint8_t fcf8[2];
-			uint16_t fcf;
-		};
+		frameControlField fcf;
 		uint8_t sequenceNumber;
 		radioData data;
 		union{
 			uint8_t crc[2];
 			uint16_t crc16;
+		};
+		//Use pack and unpack functions to set/read these
+		union{
+			uint8_t TempFcf8[2];
+			uint16_t TempFcf;
 		};
 	private:
 		//Max size is 127 bytes

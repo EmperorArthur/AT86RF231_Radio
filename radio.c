@@ -40,6 +40,8 @@ uint8_t radio_reg_write(uint8_t address, uint8_t data){
 }
 
 void radio_Frame_write(rawFrame &outFrame){
+	//Pack the radio frame
+	outFrame.pack();
 	SS_low();
 	//fb write mode
 	SPI_transaction(0b01100000);
@@ -68,6 +70,8 @@ uint8_t radio_Frame_read(rawFrame &inFrame){
 	//Once more to pull the LQI
 	uint8_t LQI = SPI_transaction(0);
 	SS_high();
+	//Unpack the radio frame
+	inFrame.unpack();
 	return LQI;
 }
 
