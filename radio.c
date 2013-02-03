@@ -61,17 +61,22 @@ uint8_t radio_Frame_read(rawFrame &inFrame){
 	//fb read mode
 	SPI_transaction(0b00100000);
 	//Read the size info (PHR)
-	inFrame.setSize(SPI_transaction(0));
+	uint8_t frameSize = SPI_transaction(0);
 	//Data is initalized by setSize(...)
+	//Read the fcf (first two bytes)
+	inFrame[0] = SPI_transaction(0);
+	inFrame[1] = SPI_transaction(0);
+	//Unpack the fcf data (this determines if there's an address or not)
+	inFrame.unpack();
+	//setSize needs to be done after the unpack so that data is the correct size
+	inFrame.setSize(frameSize);
 	//Read the data
-	for (int i = 0; i < inFrame.size();i++){
+	for (int i = 2; i < frameSize;i++){
 		inFrame[i] = SPI_transaction(0);
 	}
 	//Once more to pull the LQI
 	uint8_t LQI = SPI_transaction(0);
 	SS_high();
-	//Unpack the radio frame
-	inFrame.unpack();
 	return LQI;
 }
 

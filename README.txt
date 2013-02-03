@@ -28,9 +28,12 @@ communication.h/c:	This and serial-avr allow the use of cin, cout, and cerr via 
 LED.h/c:			A simple LED controller for visual feedback.	(to change what pins are used edit LED.h)
 Debugger.c:			The main radio testing interface. This is what I'm using to make sure the radio is working.
 memdump.py:			A python script to help with radio testing.  It doesn't do everything, but it will let you read all the registers.
+Radio_Frame.h/c:	This contains all the stuff for the frames sent and recieved by the radio.
 
 Notes:
 	Recieving data from either the serail console or the radio requires interupts to be enabled.
+	This code has asserts to prevent data access violations.
+		These safeguards won't stop you from messing up a radio frame.
 
 To Do:
 	Move the interupt handler from Debugger.c to radio-avr.h
@@ -38,4 +41,6 @@ To Do:
 	Consider moving all pin declarations into one file.
 		Either the makefile, or make a file called pins.h
 	Make a propper radioFrame that is easy to use.
-		The whole reason I started this proj
+		That's the whole reason I started this project
+		Make addressing work with both 16 and 64 bit addresses.
+			Currently only 16 bit addressing works.

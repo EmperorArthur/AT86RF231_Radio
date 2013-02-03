@@ -113,8 +113,9 @@ void loop(){
 					break;
 				//Read a radio frame
 				case 'f':
-					radio_Frame_read(aFrame);
-					printf("\nFrame Size:  %i\n",aFrame.size());
+					temp = radio_Frame_read(aFrame);
+					printf("\nLQI:  %i\n",temp);
+					printf("Frame Size:  %i\n",aFrame.size());
 					printf("frameType:  %u\n",aFrame.fcf.frameType);
 					printf("securityEnabled:  %u\n",aFrame.fcf.securityEnabled);
 					printf("framePending:  %u\n",aFrame.fcf.framePending);
@@ -123,14 +124,25 @@ void loop(){
 					printf("dstAddrMode:  %u\n",aFrame.fcf.dstAddrMode);
 					printf("frameVersion:  %u\n",aFrame.fcf.frameVersion);
 					printf("srcAddrMode:  %u\n",aFrame.fcf.srcAddrMode);
-					printf("Sequence Number is:  %u\n",aFrame.sequenceNumber);
+					printf("Sequence Number:  %u\n",aFrame.sequenceNumber);
+					printf("Destination pan_id:  0x%x\n",aFrame.dstAddr.pan_id);
+					printf("Destination Address:  0x%x\n",aFrame.dstAddr.address);
+					printf("Source pan_id:  0x%x\n",aFrame.srcAddr.pan_id);
+					printf("Source Address:  0x%x\n",aFrame.srcAddr.address);
+					printf("Data Size:  %u\n",aFrame.data.size());
 					printf("%s\n",aFrame.data.c_str());
 					printf("CRC is:  %u\n",aFrame.crc16);
 					break;
 				//Transmit a radio frame
 				case 't':
+					aFrame.fcf.dstAddrMode = SIXTEEN;
+					aFrame.fcf.srcAddrMode = SIXTEEN;
+					aFrame.dstAddr.pan_id = 0x1234;
+					aFrame.dstAddr.address = 0x5678;
+					aFrame.srcAddr.pan_id = 0x9ABC;
+					aFrame.srcAddr.address = 0xDEF0;
 					aFrame.sequenceNumber = counter++;
-					aFrame.data = "This_is_a_test.01234567890\n";
+					aFrame.data = "This_is_a_test.\n";
 					printf("%s\n",aFrame.data.c_str());
 					radio_Frame_write(aFrame);
 					break;

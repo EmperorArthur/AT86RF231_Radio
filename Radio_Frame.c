@@ -14,6 +14,10 @@ radioFrame::radioFrame(){
 	TempFcf = 0;
 	sequenceNumber = 0;
 	crc16 = 0;
+	dstAddr.pan_id = 0;
+	dstAddr.address = 0;
+	srcAddr.pan_id = 0;
+	srcAddr.address = 0;
 }
 radioFrame::radioFrame(uint8_t newSize){
 	crc16=0;
@@ -23,21 +27,49 @@ radioFrame::~radioFrame(){
 	//Nothing to do, data handles it's own cleanup
 }
 void radioFrame::setSize(uint8_t newSize){
-	//Minimum frame size is 3 (including the crc)
-	if(dataPlus >= newSize || maxSize <= newSize){
+	//mySize needs to be signed
+	//dataPlus is always present in a frame, and is the minimum frame size.
+	int mySize = newSize-dataPlus;
+	if(SIXTEEN == fcf.dstAddrMode){
+		mySize -= 4;
+	}
+	if(SIXTEEN == fcf.srcAddrMode){
+		mySize -= 4;
+	}
+	//If we end up with a negative, then just set data to zero
+	if(mySize < 0 || maxSize <= newSize){
 		data.setSize(0);
 	}else{
-		data.setSize(newSize-dataPlus);
+		data.setSize(mySize);
 	}
 }
 uint8_t radioFrame::size(){
-	return data.size()+dataPlus;
+	uint8_t mySize = data.size()+dataPlus;
+	if(SIXTEEN == fcf.dstAddrMode){
+		mySize += 4;
+	}
+	if(SIXTEEN == fcf.srcAddrMode){
+		mySize += 4;
+	}
+	return mySize;
 }
 //This lets me read and write to this thing as though it where a simple array
 uint8_t & radioFrame::operator[] (uint8_t location){
 	uint8_t mySize = data.size()+dataPlus;
+	uint8_t dataOffset = 3;
+	uint8_t srcAddrOffset = 0;
+	if(SIXTEEN == fcf.dstAddrMode){
+		mySize += 4;
+		dataOffset +=4;
+		srcAddrOffset +=4;
+	}
+	if(SIXTEEN == fcf.srcAddrMode){
+		mySize += 4;
+		dataOffset +=4;
+	}
 	//Location is unsigned, so not worrying about negative numbers
 	assert(location < mySize);
+	
 	//Handle fcf
 	if(location == 0){
 		//return upper 8 bits
@@ -48,14 +80,47 @@ uint8_t & radioFrame::operator[] (uint8_t location){
 	//Handle sequence number
 	}else if(location == 2){
 		return sequenceNumber;
+	}
+	
+	if(SIXTEEN == fcf.dstAddrMode){
+		if(location == 3){
+			//return upper 8 bits
+			return *(((uint8_t*)&dstAddr.pan_id)+1);
+		}else if(location == 4){
+			//Return lower 8 bits
+			return (uint8_t&)dstAddr.pan_id;
+		}else if(location ==5){
+			//return upper 8 bits
+			return *(((uint8_t*)&dstAddr.address)+1);
+		}else if(location == 6){
+			//Return lower 8 bits
+			return (uint8_t&)dstAddr.address;
+		}
+	}
+	if(SIXTEEN == fcf.srcAddrMode){
+		if(location == 3 + srcAddrOffset){
+			//return upper 8 bits
+			return *(((uint8_t*)&srcAddr.pan_id)+1);
+		}else if(location == 4 + srcAddrOffset){
+			//Return lower 8 bits
+			return (uint8_t&)srcAddr.pan_id;
+		}else if(location ==5 + srcAddrOffset){
+			//return upper 8 bits
+			return *(((uint8_t*)&srcAddr.address)+1);
+		}else if(location == 6 + srcAddrOffset){
+			//Return lower 8 bits
+			return (uint8_t&)srcAddr.address;
+		}
+	}
+	
 	//Handle crc
-	}else if(location == mySize - 2){
+	if(location == mySize - 2){
 		return crc[1];
 	}else if(location == mySize - 1){
 		return crc[0];
 	}
 	//If nothing else, return data
-	return data[location - 3];
+	return data[location - dataOffset];
 }
 void radioFrame::pack(){
 	TempFcf = fcf.pack();

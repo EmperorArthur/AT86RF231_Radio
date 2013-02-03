@@ -36,6 +36,12 @@ struct frameControlField{
 	AddressingMode srcAddrMode;
 };
 
+//Used for incoming and outgoing address
+struct radioAddress16{
+	uint16_t pan_id;
+	uint16_t address;
+};
+
 //This is the data in the radio frame
 //Warning, changing the data size deletes everything
 struct radioData: public rawFrame{
@@ -78,6 +84,10 @@ struct radioFrame: public rawFrame{
 			uint8_t crc[2];
 			uint16_t crc16;
 		};
+		//I'm going to bite the bullet, and just allocate these now
+		//Note: this means radioFrame DOES NOT WORK IN 64 bit addressing mode
+		radioAddress16 dstAddr;
+		radioAddress16 srcAddr;
 	private:
 		//Max size is 127 bytes
 		static const uint8_t maxSize = 127;
