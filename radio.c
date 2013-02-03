@@ -58,12 +58,13 @@ uint8_t radio_Frame_read(rawFrame &inFrame){
 	SPI_transaction(0b00100000);
 	//Read the size info (PHR)
 	uint8_t frameSize = SPI_transaction(0);
-	//Data is initalized by setSize(...)
-	//Read the fcf (first two bytes)
-	inFrame[0] = SPI_transaction(0);
-	inFrame[1] = SPI_transaction(0);
-	//Unpack the fcf data (this determines if there's an address or not)
-	inFrame.unpack();
+	if(frameSize >= 2){
+		//Read the fcf (first two bytes)
+		inFrame[0] = SPI_transaction(0);
+		inFrame[1] = SPI_transaction(0);
+		//Unpack the fcf data (this determines if there's an address or not)
+		inFrame.unpack();
+	}
 	//setSize needs to be done after the unpack so that data is the correct size
 	inFrame.setSize(frameSize);
 	//Read the data
@@ -108,7 +109,7 @@ void radio_transmit(){
 	radio_set_mode(CMD_PLL_ON);
 	radio_reg_write(RG_TRX_STATE,CMD_TX_START);
 	//This is needed, but I have yet to figure out why
-	_delay_ms(10);
+	_delay_ms(1);
 	//Wait untill TX is done
 	while((radio_reg_read(RG_TRX_STATUS) & 0x1F) == BUSY_TX);
 	//Go back to recieve mode

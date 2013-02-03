@@ -169,13 +169,23 @@ ISR(PCINT0_vect){
 		uint8_t radio_interupt_vector = radio_reg_read(RG_IRQ_STATUS);
 		//If we have a frame waiting to be read
 		if(radio_interupt_vector & _BV(IRQ_TRX_END)){
+			//Make sure the CRC is valid
 			if(radio_reg_read(RG_PHY_RSSI)&_BV(RX_CRC_VALID)){
 				//Read and print it
 				radioFrame aFrame;
 				radio_Frame_read(aFrame);
 				printf("%s",aFrame.data.c_str());
 			}else{
-				printf("\nRadio frame with invalid CRC Recieved\n");
+				//Read it anyways
+				radioData someData;
+				radio_Frame_read(someData);
+				//For some odd reason, transmit is causing me to see 0 length frames.
+				//Ignore them
+				if(someData.size() != 0){
+					printf("\nRadio frame with invalid CRC Recieved\n");
+					printf("Frame Size:  %u\n",someData.size());
+					printf("%s\n",someData.c_str());
+				}
 			}
 		}else{
 			//Let the user know
