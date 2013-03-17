@@ -15,7 +15,11 @@ void BlinkLED(unsigned long milliseconds,int number){
 	}else{
 		for(i=0;i<number;i++){
 			LEDPORT ^= _BV(LEDPIN);
-			_delay_ms(milliseconds);
+			int j;
+			//This is a work around for a _delay_ms(...) being stupid
+			for(j=0;j<milliseconds;j++){
+				_delay_ms(1);
+			}
 		}
 	}
 }
